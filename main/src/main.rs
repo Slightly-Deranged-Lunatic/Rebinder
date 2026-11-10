@@ -4,23 +4,25 @@ use std::time;
 
 fn main() {
     let device = "Keychron  Keychron Link "; // YES THE SPACE AT THE END MATTERS I DONT KNOW WHY ITS DUMB
+    let preset = "DVN";
+
     let sleep_time = time::Duration::from_secs(15);
-    let window_to_search_for = String::from("Sober");
+    let windows_to_search_for: [&str; 2] = ["Sober", "Roblox"];
 
     loop {
         thread::sleep(sleep_time);
-        if sober_open(&window_to_search_for) {
-            enable_preset(device);
+        if roblox_open(&windows_to_search_for) {
+            enable_preset(device, preset);
         } else {
             continue;
         }
 
-        while sober_open(&window_to_search_for) {
+        while roblox_open(&windows_to_search_for) {
             thread::sleep(sleep_time);
         }
 
-        if !sober_open(&window_to_search_for) {
-            disable_preset(device);
+        if !roblox_open(&windows_to_search_for) {
+            disable_control(device);
         }
     }
 }
@@ -34,30 +36,29 @@ fn get_window_ids() -> Vec<String> {
     output.lines().map(String::from).collect()
 }
 
-fn enable_preset(device: &str) {
-    let preset = "DVN";
-
-    Command::new("input-remapper-control")
+fn enable_preset(device: &str, preset: &str) {
+    let _ = Command::new("input-remapper-control")
         .arg("--command")
         .arg("start")
         .arg("--device")
         .arg(device)
         .arg("--preset")
         .arg(preset)
-        .output()
-        .unwrap();
+        .output();
+    println!("The preset {} has been enabled on device {}", preset, device);
 }
 
-fn disable_preset(device: &str) {
+fn disable_control(device: &str) {
     let _ = Command::new("input-remapper-control")
         .arg("--command")
         .arg("stop")
         .arg("--device")
         .arg(device)
         .output();
+    println!("Stopped all control of device {}", device);
 }
 
-fn sober_open(window_to_search_for: &String) -> bool {
+fn roblox_open(windows_to_search_for: & [&str; 2]) -> bool {
     let window_ids = get_window_ids();
 
     for id in window_ids {
@@ -70,7 +71,8 @@ fn sober_open(window_to_search_for: &String) -> bool {
                 .stdout,
         )
         .unwrap();
-        if window_name.trim() == window_to_search_for {
+        if windows_to_search_for.contains(&window_name.as_str()) {
+            println!("{} was open", window_name);
             return true;
         }
     }
