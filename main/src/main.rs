@@ -11,17 +11,17 @@ fn main() {
 
     loop {
         thread::sleep(sleep_time);
-        if roblox_open(&windows_to_search_for) {
+        if roblox_open(windows_to_search_for) {
             enable_preset(device, preset);
         } else {
             continue;
         }
 
-        while roblox_open(&windows_to_search_for) {
+        while roblox_open(windows_to_search_for) {
             thread::sleep(sleep_time);
         }
 
-        if !roblox_open(&windows_to_search_for) {
+        if !roblox_open(windows_to_search_for) {
             disable_control(device);
         }
     }
@@ -58,20 +58,18 @@ fn disable_control(device: &str) {
     println!("Stopped all control of device {}", device);
 }
 
-fn roblox_open(windows_to_search_for: & [&str; 2]) -> bool {
+fn roblox_open(windows_to_search_for: [&str; 2]) -> bool {
     let window_ids = get_window_ids();
 
     for id in window_ids {
-        let window_name = String::from_utf8(
-            Command::new("kdotool")
-                .arg("getwindowname")
-                .arg(id)
-                .output()
-                .unwrap()
-                .stdout,
-        )
-        .unwrap();
-        if windows_to_search_for.contains(&window_name.as_str()) {
+        let command_output = Command::new("kdotool")
+            .arg("getwindowname")
+            .arg(id)
+            .output()
+            .unwrap()
+            .stdout;
+        let window_name = str::from_utf8(&command_output).unwrap();
+        if windows_to_search_for.contains(&window_name.trim()) {
             println!("{} was open", window_name);
             return true;
         }
