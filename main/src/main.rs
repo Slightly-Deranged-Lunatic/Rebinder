@@ -3,9 +3,9 @@ use std::thread;
 use std::time;
 
 fn main() {
+    verify_dependencies_installed();
     let device = "Keychron  Keychron Link "; // YES THE SPACE AT THE END MATTERS I DONT KNOW WHY ITS DUMB
     let preset = "DVN";
-
     let sleep_time = time::Duration::from_secs(15);
     let windows_to_search_for: [&str; 2] = ["Sober", "Roblox"];
 
@@ -78,4 +78,28 @@ fn roblox_open(windows_to_search_for: & [&str; 2]) -> bool {
     }
 
     false
+}
+
+fn verify_dependencies_installed() {
+    let input_remapper = Command::new("input-remapper-control").arg("-v").output();
+    let kdotool = Command::new("kdotool").arg("-v").output();
+    let mut error_count = 0;
+    match input_remapper {
+        Ok(_) => println!("Input remapper is installed and working"),
+        Err(error) => {
+            println!("Input remapper failed due to {error}");
+            error_count += 1
+        }
+    };
+    match kdotool {
+        Ok(_) => println!("Kdotool is installed and working"),
+        Err(error) => {
+            println!("Kdotool failed due to {error}");
+            error_count += 1
+        }
+    }
+
+    if error_count != 0 {
+        panic!("One or more dependencies have failed! Please double check they are installed and have proper permissions.")
+    }
 }
